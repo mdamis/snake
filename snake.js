@@ -5,19 +5,31 @@ var gameWidth = 25;
 var gameHeight = 25;
 var cellSize = 20;
 var snake = [];
+var walls = [];
 
-var direction = "down";
+var currentDirection = "";
+var nextDirection = "";
 
 function Cell(x, y) {
 	this.x = x;
 	this.y = y;
 }
 
-function createSnake() {
+function createWalls() {
+	var walls = [];
+
+	walls.push(new Cell(0, 0));
+	walls.push(new Cell(1, 0));
+	walls.push(new Cell(0, 1));
+
+	return walls;
+}
+
+function createSnake(startX, startY, length) {
 	var snake = [];
 
-	for(var i = 0; i < 5; i++) {
-		snake.push(new Cell(12, 12 - i))
+	for(var i = 0; i < length; i++) {
+		snake.push(new Cell(startX, startY))
 	}
 	return snake;
 }
@@ -28,7 +40,8 @@ window.onload = function() {
 		ctx = canvas.getContext("2d");
 		ctxWidth = canvas.width;
 		ctxHeight = canvas.height;
-		snake = createSnake();
+		snake = createSnake(12, 12, 5);
+		walls = createWalls();
 		addEventListener("keydown", keyEvent);
 		setInterval(draw, 100);
 	}
@@ -37,7 +50,7 @@ window.onload = function() {
 function updatePosition() {
 	var nextX = snake[0].x;
 	var nextY = snake[0].y;
-	switch(direction) {
+	switch(nextDirection) {
 		case "left":
 			nextX = (nextX - 1 + gameWidth) % gameWidth;
 			break;
@@ -52,6 +65,8 @@ function updatePosition() {
 			break;
 		default:
 	}
+
+	currentDirection = nextDirection;
 	var tail = snake.pop();
 	tail.x = nextX;
 	tail.y = nextY;
@@ -63,21 +78,27 @@ function draw() {
 	ctx.fillStyle = 'black';
 	ctx.fillRect(0, 0, ctxWidth, ctxHeight);
 
-	ctx.fillStyle = 'white';
+	ctx.fillStyle = 'red';
 	for(var i = 0; i < snake.length; i++) {
 		var cell = snake[i];
 		ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
 	}
+
+	ctx.fillStyle = 'white';
+	for(var i = 0; i < walls.length; i++) {
+		var wall = walls[i];
+		ctx.fillRect(wall.x * cellSize, wall.y * cellSize, cellSize, cellSize);
+	}
 }
 
 function keyEvent(event) {
-	if(event.keyCode === 37 && direction !== "right") {
-		direction = "left";
-	} else if(event.keyCode === 38 && direction !== "down") {
-		direction = "up";
-	} else if(event.keyCode === 39 && direction !== "left") {
-		direction = "right";
-	} else if(event.keyCode === 40 && direction != "up") {
-		direction = "down";
+	if(event.keyCode === 37 && currentDirection !== "right") {
+		nextDirection = "left";
+	} else if(event.keyCode === 38 && currentDirection !== "down") {
+		nextDirection = "up";
+	} else if(event.keyCode === 39 && currentDirection !== "left") {
+		nextDirection = "right";
+	} else if(event.keyCode === 40 && currentDirection !== "up") {
+		nextDirection = "down";
 	}
 }
