@@ -7,6 +7,7 @@ var cellSize = 20;
 var snake = [];
 var walls = [];
 var food;
+var intervalID;
 
 var currentDirection = "";
 var nextDirection = "";
@@ -22,6 +23,18 @@ function createWalls() {
 	walls.push(new Cell(0, 0));
 	walls.push(new Cell(1, 0));
 	walls.push(new Cell(0, 1));
+
+	walls.push(new Cell(gameWidth - 1, 0));
+	walls.push(new Cell(gameWidth -2, 0));
+	walls.push(new Cell(gameWidth - 1, 1));
+
+	walls.push(new Cell(0, gameHeight - 1));
+	walls.push(new Cell(0, gameHeight - 2));
+	walls.push(new Cell(1, gameHeight - 1));
+
+	walls.push(new Cell(gameWidth - 1, gameHeight - 1));
+	walls.push(new Cell(gameWidth - 1, gameHeight - 2));
+	walls.push(new Cell(gameWidth - 2, gameHeight - 1));
 
 	return walls;
 }
@@ -45,7 +58,7 @@ window.onload = function() {
 		walls = createWalls();
 		food = createFood();
 		addEventListener("keydown", keyEvent);
-		setInterval(draw, 60);
+		intervalID = setInterval(draw, 60);
 	}
 }
 
@@ -66,6 +79,13 @@ function updatePosition() {
 			nextY = (nextY + 1 + gameHeight) % gameHeight;
 			break;
 		default:
+			return;
+	}
+
+	if(isColliding(nextX, nextY)) {
+		clearInterval(intervalID);
+		alert("Game Over");
+		return;
 	}
 
 	if(isEatingFood(nextX, nextY)) {
@@ -83,6 +103,21 @@ function updatePosition() {
 
 function isEatingFood(x, y) {
 	return food.x === x && food.y === y;
+}
+
+function isColliding(x, y) {
+	for(var i = 0; i < walls.length; i++) {
+		if(walls[i].x === x && walls[i].y === y) {
+			return true;
+		}
+	}
+
+	for(var i = 0; i < snake.length; i++) {
+		if(snake[i].x === x && snake[i].y === y) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function createFood() {
