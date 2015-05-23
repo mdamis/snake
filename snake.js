@@ -6,6 +6,7 @@ var gameHeight = 25;
 var cellSize = 20;
 var snake = [];
 var walls = [];
+var food;
 
 var currentDirection = "";
 var nextDirection = "";
@@ -42,8 +43,9 @@ window.onload = function() {
 		ctxHeight = canvas.height;
 		snake = createSnake(12, 12, 5);
 		walls = createWalls();
+		food = createFood();
 		addEventListener("keydown", keyEvent);
-		setInterval(draw, 100);
+		setInterval(draw, 60);
 	}
 }
 
@@ -66,11 +68,49 @@ function updatePosition() {
 		default:
 	}
 
+	if(isEatingFood(nextX, nextY)) {
+		snake.unshift(new Cell(nextX, nextY));
+		food = createFood();
+	} else {
+		var tail = snake.pop();
+		tail.x = nextX;
+		tail.y = nextY;
+		snake.unshift(tail);
+	}
+
 	currentDirection = nextDirection;
-	var tail = snake.pop();
-	tail.x = nextX;
-	tail.y = nextY;
-	snake.unshift(tail);
+}
+
+function isEatingFood(x, y) {
+	return food.x === x && food.y === y;
+}
+
+function createFood() {
+	var emptyCells = [];
+	widthLoop:
+	for(var i = 0; i < gameWidth; i++) {
+		heightLoop:
+		for(var j = 0; j < gameHeight; j++) {
+			for(var k = 0; k < walls.length; k++) {
+				if(walls[k].x === i && walls[k].y === j) {
+					continue heightLoop;
+				}
+			}
+			for(var k = 0; k < snake.length; k++) {
+				if(snake[k].x === i && snake[k].y === j) {
+					continue heightLoop;
+				}
+			}
+			emptyCells.push({x:i, y:j});
+		}
+	}
+	var index = randomInt(0, emptyCells.length);
+	var position = emptyCells[index];
+	return new Cell(position.x, position.y);
+}
+
+function randomInt(min, max) {
+	return Math.floor(Math.random() * (max - min)) + min;
 }
 
 function draw() {
@@ -89,6 +129,9 @@ function draw() {
 		var wall = walls[i];
 		ctx.fillRect(wall.x * cellSize, wall.y * cellSize, cellSize, cellSize);
 	}
+
+	ctx.fillStyle = 'yellow';
+	ctx.fillRect(food.x * cellSize, food.y * cellSize, cellSize, cellSize);
 }
 
 function keyEvent(event) {
