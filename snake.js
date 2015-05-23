@@ -71,19 +71,13 @@ function draw() {
 }
 
 function keyEvent(event) {
-	switch(event.keyCode) {
-		case 37:
-			direction = "left";
-			break;
-		case 38:
-			direction = "up";
-			break;
-		case 39:
-			direction = "right";
-			break;
-		case 40:
-			direction = "down";
-			break;
-		default:
+	if(event.keyCode === 37 && direction !== "right") {
+		direction = "left";
+	} else if(event.keyCode === 38 && direction !== "down") {
+		direction = "up";
+	} else if(event.keyCode === 39 && direction !== "left") {
+		direction = "right";
+	} else if(event.keyCode === 40 && direction != "up") {
+		direction = "down";
 	}
 }
