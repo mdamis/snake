@@ -7,7 +7,10 @@ var cellSize = 20;
 var snake = [];
 var walls = [];
 var food;
+var ambient = false;
 var intervalID;
+var red, green, blue;
+var currentRed, currentGreen, currentBlue;
 
 var currentDirection = "";
 var nextDirection = "";
@@ -32,6 +35,7 @@ function startGame() {
 	walls = createWalls();
 	food = createFood();
 	addEventListener("keydown", inGameKeyEvent);
+	initBackgroundColor();
 	intervalID = setInterval(play, 60);
 }
 
@@ -168,10 +172,9 @@ function randomInt(min, max) {
 }
 
 function draw() {
-	ctx.fillStyle = 'black';
-	ctx.fillRect(0, 0, ctxWidth, ctxHeight);
+	drawBackground();
 
-	ctx.fillStyle = 'red';
+	ctx.fillStyle = 'white';
 	for(var i = 0; i < snake.length; i++) {
 		var cell = snake[i];
 		ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
@@ -183,8 +186,65 @@ function draw() {
 		ctx.fillRect(wall.x * cellSize, wall.y * cellSize, cellSize, cellSize);
 	}
 
-	ctx.fillStyle = 'yellow';
+	drawFood();
+}
+
+function drawFood() {
+	ctx.fillStyle = 'white';
 	ctx.fillRect(food.x * cellSize, food.y * cellSize, cellSize, cellSize);
+	if(ambient) {
+		ctx.fillStyle = 'rgb('+currentRed+','+currentGreen+','+currentBlue+')';
+	} else {
+		ctx.fillStyle = 'black';
+	}
+	ctx.fillRect(food.x * cellSize + 1, food.y * cellSize + 1, cellSize - 2, cellSize - 2);
+}
+
+function drawBackground() {
+	ctx.fillStyle = 'black';
+	if(ambient) {
+		updateColor();
+		ctx.fillStyle = 'rgb('+currentRed+','+currentGreen+','+currentBlue+')';
+	}
+	ctx.fillRect(0, 0, ctxWidth, ctxHeight);
+}
+
+function initBackgroundColor() {
+	randomColor();
+	currentRed = red;
+	currentGreen = green;
+	currentBlue = blue;
+}
+
+function updateColor() {
+	if(red === currentRed && green === currentGreen && blue === currentBlue) {
+		randomColor();
+		return;
+	}
+
+	if(currentRed < red) {
+		currentRed++;
+	} else if (currentRed > red) {
+		currentRed--;
+	}
+
+	if(currentGreen < green) {
+		currentGreen++;
+	} else if (currentGreen > green) {
+		currentGreen--;
+	}
+
+	if(currentBlue < blue) {
+		currentBlue++;
+	} else if(currentBlue > blue) {
+		currentBlue--;
+	}
+}
+
+function randomColor() {
+	red = randomInt(30, 225);
+	green = randomInt(30, 225);
+	blue = randomInt(30, 225);
 }
 
 function retry(message) {
@@ -221,5 +281,7 @@ function inGameKeyEvent(event) {
 		nextDirection = "right";
 	} else if(event.keyCode === 40 && currentDirection !== "up") {
 		nextDirection = "down";
+	} else if(event.keyCode === 65) {
+		ambient = ambient ? false : true;
 	}
 }
