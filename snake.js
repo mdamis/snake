@@ -17,6 +17,24 @@ function Cell(x, y) {
 	this.y = y;
 }
 
+window.onload = function() {
+	var canvas = document.getElementById("snake");
+	if(canvas.getContext) {
+		ctx = canvas.getContext("2d");
+		ctxWidth = canvas.width;
+		ctxHeight = canvas.height;
+		startGame();
+	}
+}
+
+function startGame() {
+	snake = createSnake(12, 12, 5);
+	walls = createWalls();
+	food = createFood();
+	addEventListener("keydown", inGameKeyEvent);
+	intervalID = setInterval(play, 60);
+}
+
 function createWalls() {
 	var walls = [];
 
@@ -48,23 +66,10 @@ function createSnake(startX, startY, length) {
 	return snake;
 }
 
-window.onload = function() {
-	var canvas = document.getElementById("snake");
-	if(canvas.getContext) {
-		ctx = canvas.getContext("2d");
-		ctxWidth = canvas.width;
-		ctxHeight = canvas.height;
-		snake = createSnake(12, 12, 5);
-		walls = createWalls();
-		food = createFood();
-		addEventListener("keydown", keyEvent);
-		intervalID = setInterval(draw, 60);
-	}
-}
-
-function updatePosition() {
+function nextPosition() {
 	var nextX = snake[0].x;
 	var nextY = snake[0].y;
+
 	switch(nextDirection) {
 		case "left":
 			nextX = (nextX - 1 + gameWidth) % gameWidth;
@@ -81,24 +86,38 @@ function updatePosition() {
 		default:
 			return;
 	}
+	return {x: nextX, y: nextY};
+}
 
-	if(isColliding(nextX, nextY)) {
-		clearInterval(intervalID);
-		alert("Game Over");
-		return;
-	}
-
-	if(isEatingFood(nextX, nextY)) {
-		snake.unshift(new Cell(nextX, nextY));
+function updatePosition(x, y) {
+	if(isEatingFood(x, y)) {
+		snake.unshift(new Cell(x, y));
 		food = createFood();
 	} else {
 		var tail = snake.pop();
-		tail.x = nextX;
-		tail.y = nextY;
+		tail.x = x;
+		tail.y = y;
 		snake.unshift(tail);
 	}
 
 	currentDirection = nextDirection;
+}
+
+function play() {
+	var position = nextPosition();
+
+	if(position) {
+		if(isColliding(position.x, position.y)) {
+			clearInterval(intervalID);
+			removeEventListener("keydown", inGameKeyEvent);
+			retry("Game Over");
+			return;
+		} else {
+			updatePosition(position.x, position.y);
+		}
+	}
+	
+	draw();
 }
 
 function isEatingFood(x, y) {
@@ -149,7 +168,6 @@ function randomInt(min, max) {
 }
 
 function draw() {
-	updatePosition();
 	ctx.fillStyle = 'black';
 	ctx.fillRect(0, 0, ctxWidth, ctxHeight);
 
@@ -169,7 +187,32 @@ function draw() {
 	ctx.fillRect(food.x * cellSize, food.y * cellSize, cellSize, cellSize);
 }
 
-function keyEvent(event) {
+function retry(message) {
+	ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+	ctx.fillRect(0, 0, ctxWidth, ctxHeight);
+
+	if(message) {
+		ctx.fillStyle = 'white';
+		ctx.font = "45px Arial";
+
+		ctx.fillText(message, (ctxWidth - ctx.measureText(message).width) / 2, 100);
+
+		ctx.font = "30px Arial";
+		message = "Press Enter to Retry"
+		ctx.fillText(message, (ctxWidth - ctx.measureText(message).width) / 2, 300);
+	}
+
+	addEventListener("keydown", waitForEnterKey);
+}
+
+function waitForEnterKey(event) {
+	if(event.keyCode === 13) {
+		startGame();
+		removeEventListener("keydown", waitForEnterKey);
+	}
+}
+
+function inGameKeyEvent(event) {
 	if(event.keyCode === 37 && currentDirection !== "right") {
 		nextDirection = "left";
 	} else if(event.keyCode === 38 && currentDirection !== "down") {
