@@ -135,7 +135,7 @@ function isColliding(x, y) {
 		}
 	}
 
-	for(var i = 0; i < snake.length; i++) {
+	for(var i = 0; i < snake.length - 1; i++) {
 		if(snake[i].x === x && snake[i].y === y) {
 			return true;
 		}
