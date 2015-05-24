@@ -34,6 +34,8 @@ function startGame() {
 	snake = createSnake(12, 12, 5);
 	walls = createWalls();
 	food = createFood();
+	currentDirection = "";
+	nextDirection = "";
 	addEventListener("keydown", inGameKeyEvent);
 	initBackgroundColor();
 	intervalID = setInterval(play, 60);
