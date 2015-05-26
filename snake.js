@@ -11,6 +11,7 @@ var ambient = false;
 var intervalID;
 var red, green, blue;
 var currentRed, currentGreen, currentBlue;
+var isFinished = false;
 
 var currentDirection = "";
 var nextDirection = "";
@@ -34,6 +35,7 @@ function startGame() {
 	snake = createSnake(12, 12, 5);
 	walls = createWalls();
 	food = createFood();
+	isFinished = false;
 	currentDirection = "";
 	nextDirection = "";
 	addEventListener("keydown", inGameKeyEvent);
@@ -114,8 +116,6 @@ function play() {
 
 	if(position) {
 		if(isColliding(position.x, position.y)) {
-			clearInterval(intervalID);
-			removeEventListener("keydown", inGameKeyEvent);
 			retry("Game Over");
 			return;
 		} else {
@@ -124,6 +124,10 @@ function play() {
 	}
 	
 	draw();
+	if(isFinished) {
+		retry("Victory !");
+		return;
+	}
 }
 
 function isEatingFood(x, y) {
@@ -164,6 +168,12 @@ function createFood() {
 			emptyCells.push({x:i, y:j});
 		}
 	}
+
+	if(emptyCells.length === 0) {
+		isFinished = true;
+		return;
+	}
+
 	var index = randomInt(0, emptyCells.length);
 	var position = emptyCells[index];
 	return new Cell(position.x, position.y);
@@ -250,6 +260,9 @@ function randomColor() {
 }
 
 function retry(message) {
+	clearInterval(intervalID);
+	removeEventListener("keydown", inGameKeyEvent);
+
 	ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
 	ctx.fillRect(0, 0, ctxWidth, ctxHeight);
 
